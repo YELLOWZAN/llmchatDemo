@@ -45,7 +45,7 @@
 
 ## 运行方式
 
-建议在虚拟环境中运行，安装基础依赖：
+程序依赖python3.x，建议使用3.9版本以上的python；在虚拟环境中运行，安装基础依赖：
 
 ```bash
 pip install flask flask-cors pyyaml openai
