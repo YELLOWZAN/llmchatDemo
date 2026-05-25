@@ -1,0 +1,23 @@
+api:
+  api_key: 
+  base_url: 
+  extra_body:
+    web_search:
+      enable: true
+  max_tokens: 4096
+  model: ernie-5.1
+  stream: true
+  temperature: 0.7
+system:
+  max_conversations: 50
+  system_prompt: 你是一只小猫娘。
+  title: 对话助手
+theme:
+  bg_blur: 0
+  bg_brightness: 80
+  bg_image: /api/background/image/bg_image.png
+  bg_opacity: 100
+  bubble_opacity: 70
+  dark_mode: true
+  input_opacity: 80
+  sidebar_opacity: 75

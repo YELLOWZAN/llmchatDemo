@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 对话助手</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" id="hljs-theme" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+</head>
+<body>
+    <div id="backgroundLayer" class="background-layer"></div>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <button id="newChatBtn" class="btn btn-primary">+ 新建对话</button>
+            </div>
+            <div class="sidebar-content">
+                <div id="conversationList" class="conversation-list"></div>
+            </div>
+            <div class="sidebar-footer">
+                <button id="themeToggleBtn" class="btn btn-secondary">深色模式</button>
+                <button id="settingsBtn" class="btn btn-secondary">⚙️ 设置</button>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <button id="sidebarToggleBtn" class="btn btn-secondary sidebar-toggle">☰</button>
+            <div class="chat-container">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="输入消息... (Enter 发送, Shift+Enter 换行)" rows="1"></textarea>
+                        <div class="input-actions">
+                            <button id="stopBtn" class="btn btn-secondary" style="display: none;">⏹️ 停止</button>
+                            <button id="sendBtn" class="btn btn-primary">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>设置</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <!-- 分页标签 -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="api">API设置</button>
+                <button class="tab-btn" data-tab="theme">主题设置</button>
+                <button class="tab-btn" data-tab="background">背景设置</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- API设置页面 -->
+                <div class="tab-content active" id="api-tab">
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="apiKey" placeholder="输入 API Key" style="flex: 1;">
+                            <button id="toggleApiKeyBtn" class="btn btn-secondary" style="padding: 8px 12px; white-space: nowrap;" title="显示/隐藏">显示</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="baseUrl">API Base URL</label>
+                        <input type="text" id="baseUrl" placeholder="https://api.deepseek.com/v1">
+                    </div>
+                    <div class="form-group">
+                        <label for="model">模型</label>
+                        <input type="text" id="model" placeholder="deepseek-chat">
+                    </div>
+                    <div class="form-group">
+                        <label for="extraBody">Extra Body (JSON格式，如联网搜索)</label>
+                        <textarea id="extraBody" rows="2" placeholder='{"web_search": {"enable": true}}'></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="systemPrompt">系统提示词</label>
+                        <textarea id="systemPrompt" rows="3" placeholder="你是一个有帮助的AI助手。"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 主题设置页面 -->
+                <div class="tab-content" id="theme-tab">
+                    <div class="form-group">
+                        <label for="darkModeToggle">深色模式</label>
+                        <button id="darkModeToggle" class="btn btn-primary" style="width: 100%;">切换深色模式</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="bubbleOpacity">会话气泡透明度: <span id="bubbleOpacityValue">85%</span></label>
+                        <input type="range" id="bubbleOpacity" min="0" max="100" value="85" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="sidebarOpacity">侧边栏底色透明度: <span id="sidebarOpacityValue">85%</span></label>
+                        <input type="range" id="sidebarOpacity" min="0" max="100" value="85" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputOpacity">消息输入栏透明度: <span id="inputOpacityValue">85%</span></label>
+                        <input type="range" id="inputOpacity" min="0" max="100" value="85" style="width: 100%;">
+                    </div>
+                </div>
+                
+                <!-- 背景设置页面 -->
+                <div class="tab-content" id="background-tab">
+                    <div class="form-group">
+                        <label for="bgImageFile">上传背景图片</label>
+                        <input type="file" id="bgImageFile" accept="image/*" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                        <button id="uploadBgBtn" class="btn btn-primary" style="margin-top: 10px; width: 100%;">上传图片</button>
+                        <button id="deleteBgBtn" class="btn btn-secondary" style="margin-top: 8px; width: 100%;">删除背景</button>
+                        <p id="bgUploadStatus" style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="bgBrightness">背景亮度: <span id="brightnessValue">80%</span></label>
+                        <input type="range" id="bgBrightness" min="0" max="100" value="80" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="bgBlur">背景模糊度: <span id="blurValue">0px</span></label>
+                        <input type="range" id="bgBlur" min="0" max="20" value="0" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="bgOpacity">背景不透明度: <span id="opacityValue">100%</span></label>
+                        <input type="range" id="bgOpacity" min="0" max="100" value="100" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
